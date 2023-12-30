@@ -128,6 +128,11 @@ public class SnakeGame extends Application {
                             restart = true;
                         } else if (moving) { // Moving keeps players from pausing at the start
                             pause = !pause;
+                            if (pause) {
+                                score.setText(String.format("Current Length: %d - Press SPACE to Unpause", snake.length));
+                            } else {
+                                score.setText(String.format("Current Length: %d - Press SPACE to Pause", snake.length));
+                            }
                         } break;
                     default:
                         break;
@@ -196,6 +201,7 @@ public class SnakeGame extends Application {
             public void handle(long now) {
                 // Allows for rapid change of direction
                 if (changeDir && !gameOver && moving) {
+                    score.setText(String.format("Current Length: %d - Press SPACE to Pause", snake.length));
                     changeDir = false;
                     if (up == true) {
                         moveUp(score);
@@ -253,8 +259,6 @@ public class SnakeGame extends Application {
                     }
                     moving = false;
                     score.setText(String.format("Final Length: %d - Press SPACE to Restart", snake.length));
-                } else if (pause) {
-                    score.setText(String.format("Current Length: %d - Press SPACE to Unpause", snake.length));
                 }
             }
         };
