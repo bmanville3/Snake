@@ -28,7 +28,7 @@ public class SnakeGame extends Application {
 
     private static final int BOARD_SIZE = 16;
     private static final int BLOCK_SIZE = 24;
-    private static final long REG_WAIT = 200_000_000;
+    private static final long REG_WAIT = 180_000_000;
     private boolean up, down, left, right, pause, restart;
     private Rectangle[][] backing = new Rectangle[BOARD_SIZE][BOARD_SIZE];
 
@@ -216,7 +216,7 @@ public class SnakeGame extends Application {
                     if (crazyApples && counter >= 3) {
                         board.randomApple();
                         counter = -1;
-                        wait -= 1_500_000;
+                        wait -= 2_000_000;
                     }
                     counter++;
                 } else if (now - last_update >= wait && !pause && !gameOver && moving) {
@@ -486,7 +486,7 @@ public class SnakeGame extends Application {
             while (notPlaced) {
                 x = (int) (Math.random() * BOARD_SIZE);
                 y = (int) (Math.random() * BOARD_SIZE);
-                if (board[x][y].type == blockType.EMPTY) {
+                if (board[x][y].type != blockType.SNAKE) { // Allows for apple on apple
                     notPlaced = false;
                     board[x][y].type = blockType.APPLE;
                     backing[x][y].setFill(Color.RED);
