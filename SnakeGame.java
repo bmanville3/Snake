@@ -42,6 +42,7 @@ public class SnakeGame extends Application {
     private long wait;
     private boolean moving;
     private boolean changeDir;
+    private boolean maze;
 
     /**
      * This is the stage for the snake game; all the main interactions happen here
@@ -80,7 +81,7 @@ public class SnakeGame extends Application {
         GridPane.setColumnSpan(highScore, GridPane.REMAINING);
         Label gameType = new Label("Playing: Snake"); // Added further down for style purposes
 
-        Scene scene = new Scene(root, BOARD_SIZE * BLOCK_SIZE, BOARD_SIZE * (BLOCK_SIZE + 6));
+        Scene scene = new Scene(root, BOARD_SIZE * BLOCK_SIZE, BOARD_SIZE * (BLOCK_SIZE + 7)); // + num to increase height as needed
 
         // Game controls
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
@@ -89,7 +90,9 @@ public class SnakeGame extends Application {
                 switch (event.getCode()) {
                     case UP:
                     case W:
-                        if (up != true && down == false && !pause) {
+                        if (maze) {
+                            moveUpMaze(score);
+                        } else if (up != true && down == false && !pause) {
                             changeDir = true;
                             moving = true;
                             up = true;
@@ -98,7 +101,9 @@ public class SnakeGame extends Application {
                         } break;
                     case DOWN:
                     case S:
-                        if (down != true && up == false && !pause) {
+                        if (maze) {
+                            moveDownMaze(score);
+                        } else if (down != true && up == false && !pause) {
                             changeDir = true;
                             moving = true;
                             down = true;
@@ -107,7 +112,9 @@ public class SnakeGame extends Application {
                         } break;
                     case LEFT:
                     case A:
-                        if (left != true && right == false && !pause) {
+                        if (maze) {
+                            moveLeftMaze(score);
+                        } else if (left != true && right == false && !pause) {
                             changeDir = true;
                             moving = true;
                             up = false;
@@ -116,7 +123,9 @@ public class SnakeGame extends Application {
                         } break;
                     case RIGHT:
                     case D:
-                        if (right != true && left == false && !pause) {
+                        if (maze) {
+                            moveRightMaze(score);
+                        } else if (right != true && left == false && !pause) {
                             changeDir = true;
                             moving = true;
                             up = false;
@@ -124,15 +133,21 @@ public class SnakeGame extends Application {
                             right = true;
                         } break;
                     case SPACE:
-                        if (gameOver) {
+                        if (gameOver && !maze) {
                             restart = true;
-                        } else if (moving) { // Moving keeps players from pausing at the start
+                        } else if (moving && !maze) { // Moving keeps players from pausing at the start
                             pause = !pause;
                             if (pause) {
                                 score.setText(String.format("Current Length: %d - Press SPACE to Unpause", snake.length));
                             } else {
                                 score.setText(String.format("Current Length: %d - Press SPACE to Pause", snake.length));
                             }
+                        } else if (gameOver && maze) {
+                            mazeBoard(score);
+                            showAndHide();
+                            score.setText("Make it to the Apple that has been Randomly Placed on the Right Side");
+                            gameType.setText("Playing: Random Maze Snake");
+                            highScore.setText("You can only see one block around you in any direction");
                         } break;
                     default:
                         break;
@@ -140,59 +155,6 @@ public class SnakeGame extends Application {
             }
         });
 
-        // Building other game mode options
-        Button regSnake = new Button("Snake");
-        regSnake.setMinSize((BOARD_SIZE * BLOCK_SIZE) / 3, BLOCK_SIZE);
-        regSnake.setFocusTraversable(false); // Necessary for arrow keys to work in game
-        regSnake.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                resetBoard();
-                crazyApples = false;
-                wait = REG_WAIT;
-                score.setText(String.format("Current Length: %d - Press any direction to play", snake.length));
-                gameType.setText("Playing: Snake");
-                highScore.setText(String.format("Session Highscore for Snake: %d", highestReg));
-            }
-        });
-        Button fastSnake = new Button("Speed Snake");
-        fastSnake.setMinSize((BOARD_SIZE * BLOCK_SIZE) / 3, BLOCK_SIZE);
-        fastSnake.setFocusTraversable(false);
-        fastSnake.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                resetBoard();
-                crazyApples = false;
-                wait = (long) (REG_WAIT / 3);
-                score.setText(String.format("Current Length: %d - Press any direction to play", snake.length));
-                gameType.setText("Playing: Speed Snake");
-                highScore.setText(String.format("Session Highscore for Speed Snake: %d", highestFast));
-            }
-        });
-        Button crazySnake = new Button("Crazy Apples Snake");
-        crazySnake.setMinSize((BOARD_SIZE * BLOCK_SIZE) / 3, BLOCK_SIZE);
-        crazySnake.setFocusTraversable(false);
-        crazySnake.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                resetBoard();
-                crazyApples = true;
-                wait = (long) (REG_WAIT * 4 / 3);
-                score.setText(String.format("Current Length: %d - Press any direction to play", snake.length));
-                gameType.setText("Playing: Crazy Apples Snake");
-                highScore.setText(String.format("Session Highscore for Crazy Apples: %d", highestCrazy));
-            }
-        });
-        HBox box = new HBox();
-        box.getChildren().addAll(regSnake, fastSnake, crazySnake);
-        root.add(box, 0, BOARD_SIZE + 3);
-        GridPane.setColumnSpan(box, GridPane.REMAINING);
-        root.add(gameType, (int) (BOARD_SIZE / 3), BOARD_SIZE + 4);
-        GridPane.setColumnSpan(gameType, GridPane.REMAINING);
-
-        stage.setScene(scene);
-        stage.show();
-        
         // The timer that keeps the game running
         AnimationTimer timer = new AnimationTimer() {
             private long last_update = 0;
@@ -262,6 +224,87 @@ public class SnakeGame extends Application {
                 }
             }
         };
+
+        // Building other game mode options
+        Button regSnake = new Button("Snake");
+        regSnake.setMinSize((BOARD_SIZE * BLOCK_SIZE) / 2, BLOCK_SIZE);
+        regSnake.setFocusTraversable(false); // Necessary for arrow keys to work in game
+        regSnake.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                timer.stop();
+                resetBoard();
+                crazyApples = false;
+                wait = REG_WAIT;
+                score.setText(String.format("Current Length: %d - Press any direction to play", snake.length));
+                gameType.setText("Playing: Snake");
+                highScore.setText(String.format("Session Highscore for Snake: %d", highestReg));
+                timer.start();
+            }
+        });
+
+        Button fastSnake = new Button("Speed Snake");
+        fastSnake.setMinSize((BOARD_SIZE * BLOCK_SIZE) / 2, BLOCK_SIZE);
+        fastSnake.setFocusTraversable(false);
+        fastSnake.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                timer.stop();
+                resetBoard();
+                crazyApples = false;
+                wait = (long) (REG_WAIT / 3);
+                score.setText(String.format("Current Length: %d - Press any direction to play", snake.length));
+                gameType.setText("Playing: Speed Snake");
+                highScore.setText(String.format("Session Highscore for Speed Snake: %d", highestFast));
+                timer.start();
+            }
+        });
+
+        Button crazySnake = new Button("Crazy Apples Snake");
+        crazySnake.setMinSize((BOARD_SIZE * BLOCK_SIZE) / 2, BLOCK_SIZE);
+        crazySnake.setFocusTraversable(false);
+        crazySnake.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                timer.stop();
+                resetBoard();
+                crazyApples = true;
+                wait = (long) (REG_WAIT * 4 / 3);
+                score.setText(String.format("Current Length: %d - Press any direction to play", snake.length));
+                gameType.setText("Playing: Crazy Apples Snake");
+                highScore.setText(String.format("Session Highscore for Crazy Apples: %d", highestCrazy));
+                timer.start();
+            }
+        });
+
+        Button mazeSnake = new Button("Random Maze Snake");
+        mazeSnake.setMinSize((BOARD_SIZE * BLOCK_SIZE) / 2, BLOCK_SIZE);
+        mazeSnake.setFocusTraversable(false);
+        mazeSnake.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                timer.stop();
+                mazeBoard(score);
+                showAndHide();
+                score.setText("Make it to the Apple that has been Randomly Placed on the Right Side");
+                gameType.setText("Playing: Random Maze Snake");
+                highScore.setText("You can only see one block around you in any direction");
+            }
+        });
+
+        HBox boxUp = new HBox();
+        HBox boxDown = new HBox();
+        boxUp.getChildren().addAll(regSnake, fastSnake);
+        boxDown.getChildren().addAll(crazySnake, mazeSnake);
+        root.add(boxUp, 0, BOARD_SIZE + 3);
+        root.add(boxDown, 0, BOARD_SIZE + 4);
+        GridPane.setColumnSpan(boxUp, GridPane.REMAINING);
+        GridPane.setColumnSpan(boxDown, GridPane.REMAINING);
+        root.add(gameType, (int) (BOARD_SIZE / 3), BOARD_SIZE + 5);
+        GridPane.setColumnSpan(gameType, GridPane.REMAINING);
+
+        stage.setScene(scene);
+        stage.show();
         timer.start();
     }
 
@@ -271,10 +314,10 @@ public class SnakeGame extends Application {
      * Also, save the high score information
      */
     private void resetBoard() {
+        maze = false;
         // If player changes game while still playing
         if (moving) {
             if (crazyApples) {
-                wait = (long) (REG_WAIT * 4 / 3);
                 if (snake.length > highestCrazy) {
                     highestCrazy = snake.length;
                 }
@@ -312,6 +355,140 @@ public class SnakeGame extends Application {
         moving = false;
     }
 
+    private void mazeBoard(Label score) {
+        if (moving) {
+            if (crazyApples) {
+                if (snake.length > highestCrazy) {
+                    highestCrazy = snake.length;
+                }
+            } else if (wait == REG_WAIT) {
+                if (snake.length > highestReg) {
+                    highestReg = snake.length;
+                }
+            } else {
+                if (snake.length > highestFast) {
+                    highestFast = snake.length;
+                }
+            }
+        }
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                backing[i][j].setFill(Color.BLACK);
+                board.board[i][j].type = blockType.EMPTY;
+            }
+        }
+        maze = true;
+        snake.snakeBlocks = new LinkedList<>();
+        Block startingBlock = board.board[0][0];
+        startingBlock.type = blockType.SNAKE;
+        snake.snakeBlocks.add(startingBlock);
+        snake.head = startingBlock;
+        backing[startingBlock.x][startingBlock.y].setFill(Color.GREEN);
+        crazyApples = false;
+        up = false;
+        down = false;
+        left = false;
+        right = false;
+        snake.length = 1;
+        gameOver = false;
+        restart = false;
+        pause = false;
+        moving = false;
+        randomMaze(0, score);
+    }
+
+    /**
+     * Creates a random maze by randomly placing walls
+     * solvableMaze() will test if the maze is solvable
+     * If it is not solvable, it will generate a new random maze and try again
+     */
+    private void randomMaze(int repeat, Label score) {
+        int wallsPlaced = 0;
+        int x = -1;
+        int y = -1;
+        while (wallsPlaced <= (BOARD_SIZE * BOARD_SIZE) / 3) {
+            x = (int) (Math.random() * BOARD_SIZE);
+            y = (int) (Math.random() * BOARD_SIZE);
+            if (board.board[x][y].type == blockType.EMPTY) {
+                board.board[x][y].type = blockType.WALL;
+                wallsPlaced++;
+            }
+        }
+        x = BOARD_SIZE - 1;
+        int count = 0;
+        boolean placed = false;
+        while (!placed) {
+            y = (int) (Math.random() * BOARD_SIZE);
+            count++;
+            if (board.board[x][y].type == blockType.EMPTY) {
+                placed = true;
+                board.board[x][y].type = blockType.APPLE;
+            }
+            if (count == 2 * BOARD_SIZE && !placed) {
+                for (int i = 0; i < BOARD_SIZE; i++) {
+                    for (int j = 0; j < BOARD_SIZE; j++) {
+                        backing[i][j].setFill(Color.BLACK);
+                        board.board[i][j].type = blockType.EMPTY;
+                    }
+                }
+                board.board[0][0].type = blockType.SNAKE;
+                randomMaze(repeat, score);
+                placed = true;
+            }
+        }
+
+        if (!solvableMaze()) {
+            for (int i = 0; i < BOARD_SIZE; i++) {
+                for (int j = 0; j < BOARD_SIZE; j++) {
+                    backing[i][j].setFill(Color.BLACK);
+                    board.board[i][j].type = blockType.EMPTY;
+                }
+            }
+            board.board[0][0].type = blockType.SNAKE;
+            if (repeat < 200) {
+                randomMaze(repeat + 1, score);
+            } else {
+                score.setText("Sorry, no solvable maze was found. Please retry to play.");
+            }
+        }
+    }
+
+    /**
+     * DFS search to check if the maze is solvable
+     * @return whether the maze is solvable or not
+     */
+    private boolean solvableMaze() {
+        boolean[][] visited = new boolean[BOARD_SIZE][BOARD_SIZE];
+        LinkedList<Coord> stack = new LinkedList<>();
+        stack.add(new Coord(0,0));
+        while (!stack.isEmpty()) {
+            Coord coor = stack.removeFirst();
+            visited[coor.x][coor.y] = true;
+            if (board.board[coor.x][coor.y].type == blockType.APPLE) {
+                return true;
+            }
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    if (coor.x + i >= 0 && coor.x + i < BOARD_SIZE && coor.y + j >= 0 && coor.y + j < BOARD_SIZE &&
+                            (j == 0 || i == 0) && board.board[coor.x + i][coor.y + j].type != blockType.WALL && !visited[coor.x + i][coor.y + j]) {
+                        stack.addFirst(new Coord(coor.x + i, coor.y + j));
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private class Coord {
+        private int x;
+        private int y;
+
+        private Coord(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
     /**
      * Moves the snake up; ends the game if an invalid move
      * Grows the snake if the next square is an apple
@@ -335,6 +512,31 @@ public class SnakeGame extends Application {
                 snake.length++;
                 board.randomApple();
                 score.setText(String.format("Current Length: %d - Press SPACE to Pause", snake.length));
+            }
+        }
+    }
+
+    /**
+     * Used for maze game
+     */
+    private void moveUpMaze(Label score) {
+        int x = snake.head.x;
+        int y = snake.head.y;
+        if (y - 1 >= 0 && board.board[x][y-1].type != blockType.WALL) {
+            if (board.board[x][y-1].type == blockType.APPLE) {
+                gameOver = true;
+                score.setText(String.format("You Made It to the Apple! - Press SPACE to Try Another Random Maze", snake.length));
+                showMaze();
+            }
+            snake.snakeBlocks.addFirst(board.board[x][y-1]);
+            snake.head = board.board[x][y-1];
+            updateColor(backing[x][y-1], x, y - 1, Color.GREEN);
+            x = snake.snakeBlocks.getLast().x;
+            y = snake.snakeBlocks.getLast().y;
+            updateColor(backing[x][y], x, y, Color.ORANGE);
+            snake.snakeBlocks.removeLast();
+            if (!gameOver) {
+                showAndHide();
             }
         }
     }
@@ -367,6 +569,31 @@ public class SnakeGame extends Application {
     }
 
     /**
+     * Used for maze game
+     */
+    private void moveDownMaze(Label score) {
+        int x = snake.head.x;
+        int y = snake.head.y;
+        if (y + 1 < BOARD_SIZE && board.board[x][y+1].type != blockType.WALL) {
+            if (board.board[x][y+1].type == blockType.APPLE) {
+                gameOver = true;
+                score.setText(String.format("You Made It to the Apple! - Press SPACE to Try Another Random Maze", snake.length));
+                showMaze();
+            }
+            snake.snakeBlocks.addFirst(board.board[x][y+1]);
+            snake.head = board.board[x][y+1];
+            updateColor(backing[x][y+1], x, y + 1, Color.GREEN);
+            x = snake.snakeBlocks.getLast().x;
+            y = snake.snakeBlocks.getLast().y;
+            updateColor(backing[x][y], x, y, Color.ORANGE);
+            snake.snakeBlocks.removeLast();
+            if (!gameOver) {
+                showAndHide();
+            }
+        }
+    }
+
+    /**
      * Moves the snake left; ends the game if an invalid move
      * Grows the snake if the next square is an apple
      */
@@ -389,6 +616,31 @@ public class SnakeGame extends Application {
                 snake.length++;
                 board.randomApple();
                 score.setText(String.format("Current Length: %d - Press SPACE to Pause", snake.length));
+            }
+        }
+    }
+
+    /**
+     * Used for maze game
+     */
+    private void moveLeftMaze(Label score) {
+        int x = snake.head.x;
+        int y = snake.head.y;
+        if (x - 1 >= 0 && board.board[x-1][y].type != blockType.WALL) {
+            if (board.board[x-1][y].type == blockType.APPLE) {
+                gameOver = true;
+                score.setText(String.format("You Made It to the Apple! - Press SPACE to Try Another Random Maze", snake.length));
+                showMaze();
+            }
+            snake.snakeBlocks.addFirst(board.board[x-1][y]);
+            snake.head = board.board[x-1][y];
+            updateColor(backing[x-1][y], x - 1, y, Color.GREEN);
+            x = snake.snakeBlocks.getLast().x;
+            y = snake.snakeBlocks.getLast().y;
+            updateColor(backing[x][y], x, y, Color.ORANGE);
+            snake.snakeBlocks.removeLast();
+            if (!gameOver) {
+                showAndHide();
             }
         }
     }
@@ -421,6 +673,31 @@ public class SnakeGame extends Application {
     }
 
     /**
+     * Used for maze game
+     */
+    private void moveRightMaze(Label score) {
+        int x = snake.head.x;
+        int y = snake.head.y;
+        if (x + 1 < BOARD_SIZE && board.board[x+1][y].type != blockType.WALL) {
+            if (board.board[x+1][y].type == blockType.APPLE) {
+                gameOver = true;
+                score.setText(String.format("You Made It to the Apple! - Press SPACE to Try Another Random Maze", snake.length));
+                showMaze();
+            }
+            snake.snakeBlocks.addFirst(board.board[x+1][y]);
+            snake.head = board.board[x+1][y];
+            updateColor(backing[x+1][y], x + 1, y, Color.GREEN);
+            x = snake.snakeBlocks.getLast().x;
+            y = snake.snakeBlocks.getLast().y;
+            updateColor(backing[x][y], x, y, Color.ORANGE);
+            snake.snakeBlocks.removeLast();
+            if (!gameOver) {
+                showAndHide();
+            }
+        }
+    }
+
+    /**
      * Updates the color of the block and changes the type accordingly
      * @param rec rectangle to update color
      * @param x horizontal coordinate
@@ -433,8 +710,55 @@ public class SnakeGame extends Application {
             board.board[x][y].type = blockType.SNAKE;
         } else if (color == Color.ORANGE) {
             board.board[x][y].type = blockType.EMPTY;
-        } else {
-            board.board[x][y].type = blockType.APPLE;
+        }
+    }
+
+    /*
+     * For maze game
+     * Shows the color of the squares directly surrounding the player
+     * Hides all the other squares
+     */
+    private void showAndHide() {
+        int x = snake.head.x;
+        int y = snake.head.y;
+        backing[x][y].setFill(Color.GREEN);
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (x + i >= 0 && x + i < BOARD_SIZE && y + j >= 0 && y + j < BOARD_SIZE) {
+                    if (board.board[x + i][y + j].type == blockType.WALL) {
+                        backing[x + i][y + j].setFill(Color.BLUE);
+                    } else if (board.board[x + i][y + j].type == blockType.EMPTY) {
+                        backing[x + i][y + j].setFill(Color.ORANGE);
+                    } else if (board.board[x + i][y + j].type == blockType.APPLE) {
+                        backing[x + i][y + j].setFill(Color.RED);
+                    }
+                }
+            }
+        }
+        for (int i = -2; i <= 2; i++) {
+            for (int j = -2; j <= 2; j++) {
+                if (x + i >= 0 && x + i < BOARD_SIZE && y + j >= 0 && y + j < BOARD_SIZE && (Math.abs(j) == 2 || Math.abs(i) == 2)) {
+                    backing[x + i][y + j].setFill(Color.BLACK);
+                }
+            }
+        }
+    }
+    /**
+     * Shows the entire maze once the apple is found
+     */
+    private void showMaze() {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (board.board[i][j].type == blockType.WALL) {
+                    backing[i][j].setFill(Color.BLUE);
+                } else if (board.board[i][j].type == blockType.EMPTY) {
+                    backing[i][j].setFill(Color.ORANGE);
+                } else if (board.board[i][j].type == blockType.APPLE) {
+                    backing[i][j].setFill(Color.RED);
+                } else {
+                    backing[i][j].setFill(Color.GREEN);
+                }
+            }
         }
     }
 
@@ -442,7 +766,8 @@ public class SnakeGame extends Application {
     private static enum blockType {
         SNAKE,
         APPLE,
-        EMPTY;
+        EMPTY,
+        WALL;
     }
 
     /**
