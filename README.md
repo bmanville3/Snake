@@ -19,4 +19,6 @@ There are some coding highlights from Random Maze Snake I want to cover. This ga
 # Leaderboard
 The leaderboard is a recent implementation. It has a private class User that backs it. It allows for users to select an account to user, add new accounts, or delete old accounts. This allows for users to keep track of their highscores. There is also a leaderboard of the highest scores from each type of game. I chose to keep track of everything in Highscore.txt that is formatted like a .csv file. The .jar file has this text file compiled with it.
 
+The leaderboard is still in the bug fixing phase. Most of the features are worked out, but there is always the occasional bug that pops up. The only way to find these bugs is through playing the game, so if you find any, please let me know so I can fix them! I am trying to play the game myself to find the bugs, but with the semester coming back, I may not have time to thoroughly test all possibilities. I believe all game-breaking bugs are gone though.
+
 This was just a quick overview of the code. Hope you enjoy the game!
