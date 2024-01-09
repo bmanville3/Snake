@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Author: Brandon Manville
+Main-Class: SnakeGame
+
