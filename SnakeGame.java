@@ -131,7 +131,6 @@ public class SnakeGame extends Application {
                             if (!moveUp(score, highScore)) {
                                 timer.stop();
                                 saveSessionScore(highScore);
-                                System.out.println("SHOULD SAVE");
                             }
                             up = true;
                             left = false;
@@ -151,7 +150,6 @@ public class SnakeGame extends Application {
                             if (!moveDown(score, highScore)) {
                                 timer.stop();
                                 saveSessionScore(highScore);
-                                System.out.println("SHOULD SAVE");
                             }
                             down = true;
                             left = false;
@@ -171,7 +169,6 @@ public class SnakeGame extends Application {
                             if (!moveLeft(score, highScore)) {
                                 timer.stop();
                                 saveSessionScore(highScore);
-                                System.out.println("SHOULD SAVE");
                             }
                             up = false;
                             down = false;
@@ -191,7 +188,6 @@ public class SnakeGame extends Application {
                             if (!moveRight(score, highScore)) {
                                 timer.stop();
                                 saveSessionScore(highScore);
-                                System.out.println("SHOULD SAVE");
                             }
                             up = false;
                             down = false;
@@ -352,9 +348,6 @@ public class SnakeGame extends Application {
         Button confirmSelect = new Button("Confirm Username Selection");
         selectDropDown.getItems().addAll(player.allUsers);
         confirmSelect.setOnAction(e -> {
-            System.out.println(!gameOver);
-            System.out.println(playing);
-
             if (!gameOver && playing) saveSessionScore(highScore);
             if (selectDropDown.getValue() != null) {
                 player.setUser(selectDropDown.getValue());
@@ -1621,14 +1614,14 @@ public class SnakeGame extends Application {
 
                     changeLeaderBoard();
                 } catch (Exception e) {
-                    System.out.println(e.toString());
+                    e.printStackTrace();
                     BufferedWriter writerSafety = new BufferedWriter(new FileWriter(HIGH_SCORES));
                     writerSafety.write(safety);
                     writerSafety.close();
                 }
                 safetyScanner.close();
             } catch (Exception e) {
-                System.out.println(e.toString());
+                e.printStackTrace();
             }
         }
 

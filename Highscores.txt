@@ -1,12 +1,12 @@
 # high_scores.csv
 Game Mode,Rank 1,Rank 2,Rank 3
-Snake,Guest-7,Guest-6,Guest-4
-Speed,Brandon-3,hfosdf-1,hfosdf-1
-Crazy Apples,Guest-6,na-0,na-0
-Most Mazes Complete,hfosdf-1,na-0,na-0
+Snake,Sup-75,Guest-37,na-0
+Speed,Sup-14,Brandon-5,Sup-4
+Crazy Apples,Sup-67,na-0,na-0
+Most Mazes Complete,Sup-2,na-0,na-0
 
 # users.csv
 Name,Snake,Speed,Crazy Apples,Most Mazes Complete
 Valerie,25,7,23,3
 Brandon,4,6,6,2
-hfosdf,18,3,8,1
+Sup,75,14,67,2
