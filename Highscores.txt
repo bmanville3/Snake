@@ -7,5 +7,5 @@ Most Mazes Complete,na-0,na-0,na-0
 
 # users.csv
 Name,Snake,Speed,Crazy Apples,Most Mazes Complete
-Valerie,25,7,23,3
-Brandon,4,6,6,2
+Valerie,25,7,24,3
+Brandon,7,6,85,3

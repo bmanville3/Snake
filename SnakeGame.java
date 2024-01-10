@@ -349,19 +349,20 @@ public class SnakeGame extends Application {
         selectDropDown.getItems().addAll(player.allUsers);
         confirmSelect.setOnAction(e -> {
             if (!gameOver && playing) saveSessionScore(highScore);
+            resetBoard();
+            speed = false;
+            crazyApples = false;
+            maze = false;
+            wait = REG_WAIT;
             if (selectDropDown.getValue() != null) {
                 player.setUser(selectDropDown.getValue());
             } else {
                 player.setUser("Guest");
             }
-            userSelection.close();
-            resetBoard();
-            speed = false;
-            crazyApples = false;
-            maze = false;
             score.setText(String.format("Current Length: %d - Press any direction to play", snake.length));
             gameType.setText("Playing: Snake");
             highScore.setText(String.format("Session Highscore for Snake: %d", highestReg));
+            userSelection.close();
         });
         HBox selectionBoxes = new HBox();
         selectionBoxes.getChildren().addAll(selectLabel, selectDropDown, confirmSelect);
@@ -522,6 +523,9 @@ public class SnakeGame extends Application {
                 backing[i][j].setFill(Color.ORANGE);
                 board.board[i][j].type = blockType.EMPTY;
             }
+        }
+        if (crazyApples) {
+            wait = (long) (REG_WAIT * 4 / 3); // Need to reset wait after reset with crazy apples
         }
         snake.snakeBlocks = new LinkedList<>();
         Block startingBlock = board.board[(int) (BOARD_SIZE / 2)][(int) (BOARD_SIZE / 2)];
@@ -1263,7 +1267,7 @@ public class SnakeGame extends Application {
                         } else if (!holder.equals("")) {
                             String[] holders = holder.split(",");
                             for (int j = 1; j < 4; j++) {
-                                highss[index][j - 1] = Integer.parseInt(holders[j].substring(holders[j].length() - 1));
+                                highss[index][j - 1] = Integer.parseInt(holders[j].substring(holders[j].indexOf("-") + 1, holders[j].length()));
                                 names[index][j - 1] = holders[j].substring(0, holders[j].indexOf("-"));
                             }
                             index++;
@@ -1486,6 +1490,7 @@ public class SnakeGame extends Application {
                         writer.write(content4.toString());
                     }
                     writer.close();
+                    changeLeaderBoard();
                 } catch (Exception e) {
                     e.printStackTrace();
                     BufferedWriter writerSafety = new BufferedWriter(new FileWriter(HIGH_SCORES));
@@ -1493,7 +1498,6 @@ public class SnakeGame extends Application {
                     writerSafety.close();
                 }
                 safetyScanner.close();
-                changeLeaderBoard();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1601,7 +1605,7 @@ public class SnakeGame extends Application {
                             writer.write(lines[2] + "\n");
                             writer.write(lines[3] + "\n");
                         }
-                    } else { // Random Maze Snake
+                    } else { // Random Maze Snake which is not applicable for Guests
                         writer.write(lines[0] + "\n");
                         writer.write(lines[1] + "\n");
                         writer.write(lines[2] + "\n");
