@@ -1,3 +1,5 @@
+package SnakeGame;
+
 import java.util.LinkedList;
 import java.util.HashSet;
 import javafx.collections.ObservableList;
@@ -28,7 +30,6 @@ import javafx.stage.Stage;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.PrintWriter;
 import java.util.Scanner;
 import java.io.FileWriter;
 
@@ -1279,6 +1280,27 @@ public class SnakeGame extends Application {
                     }
                 }
                 scanner.close();
+            } catch (java.io.FileNotFoundException | java.util.NoSuchElementException e) {
+                File file = new File(HIGH_SCORES);
+                try {
+                    file.createNewFile();
+                    BufferedWriter appender = new BufferedWriter(new FileWriter(HIGH_SCORES, true));
+                    appender.append("# high_scores.csv\n" +
+                            "Game Mode,Rank 1,Rank 2,Rank 3\n" +
+                            "Snake,Brandon-8,Guest-6,Guest-5\n" +
+                            "Speed,na-0,na-0,na-0\n" +
+                            "Crazy Apples,Brandon-20,na-0,na-0\n" +
+                            "Most Mazes Complete,na-0,na-0,na-0\n" +
+                            "\n" +
+                            "# users.csv\n" +
+                            "Name,Snake,Speed,Crazy Apples,Most Mazes Complete\n" +
+                            "Valerie,25,7,24,3\n" +
+                            "Brandon,8,6,85,3\n");
+                    appender.close();
+                    findAllUsers();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
