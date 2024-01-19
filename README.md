@@ -3,6 +3,15 @@ This program is the classic Snake game you can find on Google or any other site.
 
 A player can move using W, S, A, D or UP, DOWN, LEFT, RIGHT. A player can pause using SPACE. Once a player dies by touching the border or themselves, they can press space to restart. The game will keep track of the highest session score for each game mode. The game also has a leaderboard and a username system. Players can sign in and keep track of their all-time highs. Simply compile and run the file to play or download the .jar file (requires at least JRE installed). Once the game is started, press any direction to play.
 
+# Running the Game
+Snake.jar should work for everyone. If you run it from the command prompt, JavaFX will give its classic warning; there are no problems, so just ignore it. In the case where Snake.jar does not work. You will need to have JavaFX downloaded. 
+
+### For IntelliJ
+The Main.java and SnakeGame.java are the files you will need to run if you are using IntelliJ. Main just runs SnakeGame. Place both the files in a new folder called SnakeGame inside of src. You need to add JavaFX to your library: File>Project Stucture>Libraries>"+"> find wherever JavaFX lib downloaded and add base, graphics, and controls to the library. You should now be able to run it in IntelliJ. If you want to create your own .jar, "Export JavaFX 11, 15 or 17 projects into an executable jar file with IntelliJ [2022]" by Random Code can help with that (make sure to add base, graphics, and controls in the artifact if you do not have them there already when making the .jar).
+
+### For Command Prompt
+You will need to edit the SnakeGame file. Simply just delete or comment out the very top line package SnakeGame. You can then do "javac --module-path [Your Path Here] --add-modules javafx.controls,javafx.base,javafx.graphics SnakeGame.java" replacing Your Path Here with the path to your JavaFX lib file.
+
 # Goal of this Project and the Implementation Choices
 The goal of this project was to create a functioning GUI and practice my OOP skills. I thought making a game would be a fun way to do both of these. I chose Java as my language since I recently did a project in Python and another in MySQL and had not done one in Java. Because of the project, I now have much more experience with building GUIs with JavaFX and improved my knowledge of Java. To make the GUI, I used JavaFX. The playing field itself is a GridPane of Rectangles that change colors. I used AnimationTimer in JavaFX to move the game forward and implemented a KeyListener to take commands from the player.
 
